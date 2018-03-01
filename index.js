@@ -5,8 +5,14 @@ var parseHeaders = require("parse-headers")
 var xtend = require("xtend")
 
 module.exports = createXHR
-createXHR.XMLHttpRequest = window.XMLHttpRequest || noop
-createXHR.XDomainRequest = "withCredentials" in (new createXHR.XMLHttpRequest()) ? createXHR.XMLHttpRequest : window.XDomainRequest
+// Allow use of default import syntax in TypeScript
+module.exports.default = createXHR;
+createXHR.XMLHttpRequest = function(){
+    return window.XMLHttpRequest || noop
+}
+createXHR.XDomainRequest = function(){
+    return "withCredentials" in (new (createXHR.XMLHttpRequest())()) ? createXHR.XMLHttpRequest() : window.XDomainRequest
+}
 
 forEachArray(["get", "put", "post", "patch", "head", "delete"], function(method) {
     createXHR[method === "delete" ? "del" : method] = function(uri, options, callback) {
@@ -133,9 +139,9 @@ function _createXHR(options) {
 
     if (!xhr) {
         if (options.cors || options.useXDR) {
-            xhr = new createXHR.XDomainRequest()
+            xhr = new (createXHR.XDomainRequest())()
         }else{
-            xhr = new createXHR.XMLHttpRequest()
+            xhr = new (createXHR.XMLHttpRequest())()
         }
     }
 
